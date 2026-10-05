@@ -8,7 +8,6 @@ import { DatasetInput } from '@/components/sections/DatasetInput';
 import { MergeSortPanel } from '@/components/sections/MergeSortPanel';
 import { QuickSortPanel } from '@/components/sections/QuickSortPanel';
 import { Comparison } from '@/components/sections/Comparison';
-import { Benchmark } from '@/components/sections/Benchmark';
 import { WorstCase } from '@/components/sections/WorstCase';
 import { Complexity } from '@/components/sections/Complexity';
 import { Recommendation } from '@/components/sections/Recommendation';
@@ -21,7 +20,6 @@ const NAV_ITEMS = [
   { id: 'merge-sort', label: 'Merge Sort' },
   { id: 'quick-sort', label: 'Quick Sort' },
   { id: 'comparison', label: 'Compare' },
-  { id: 'benchmark', label: 'Benchmark' },
   { id: 'worst-case', label: 'Worst Case' },
   { id: 'complexity', label: 'Complexity' },
   { id: 'recommendation', label: 'Recommend' },
@@ -143,8 +141,6 @@ function AppContent() {
         </div>
 
         <Comparison dataset={dataset} pivotStrategy={pivotStrategy} />
-
-        <Benchmark pivotStrategy={pivotStrategy} />
 
         <WorstCase />
 
