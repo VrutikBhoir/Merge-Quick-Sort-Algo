@@ -12,7 +12,6 @@ import { Benchmark } from '@/components/sections/Benchmark';
 import { WorstCase } from '@/components/sections/WorstCase';
 import { Complexity } from '@/components/sections/Complexity';
 import { Recommendation } from '@/components/sections/Recommendation';
-import { ProblemSolving } from '@/components/sections/ProblemSolving';
 import { AnalysisReport } from '@/components/sections/AnalysisReport';
 import { Conclusion } from '@/components/sections/Conclusion';
 
@@ -26,7 +25,6 @@ const NAV_ITEMS = [
   { id: 'worst-case', label: 'Worst Case' },
   { id: 'complexity', label: 'Complexity' },
   { id: 'recommendation', label: 'Recommend' },
-  { id: 'problem-solving', label: 'Problems' },
   { id: 'report', label: 'Report' },
   { id: 'conclusion', label: 'Conclusion' },
 ];
@@ -157,8 +155,6 @@ function AppContent() {
           datasetType={datasetType}
           pivotStrategy={pivotStrategy}
         />
-
-        <ProblemSolving />
 
         <AnalysisReport
           dataset={dataset}
