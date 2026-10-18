@@ -71,6 +71,44 @@ export function isSorted(arr: number[]): boolean {
   return true;
 }
 
+/**
+ * Shape of an input array, used to label the dataset in the UI.
+ *
+ * This is descriptive only — it never changes how the algorithms behave. Both sorts
+ * always perform their full work regardless of input order, which is exactly what the
+ * benchmark is meant to show.
+ */
+export type InputShape = 'empty' | 'single' | 'already-sorted' | 'reverse-sorted' | 'all-equal' | 'unordered';
+
+export function describeInput(arr: number[]): InputShape {
+  if (arr.length === 0) return 'empty';
+  if (arr.length === 1) return 'single';
+
+  let ascending = true;
+  let descending = true;
+  for (let i = 1; i < arr.length; i++) {
+    if (arr[i] < arr[i - 1]) ascending = false;
+    if (arr[i] > arr[i - 1]) descending = false;
+    if (!ascending && !descending) break;
+  }
+
+  // An array of all-equal values is both ascending and descending; report it as its own
+  // case because it is the input that makes 3-way partitioning pay off.
+  if (ascending && descending) return 'all-equal';
+  if (ascending) return 'already-sorted';
+  if (descending) return 'reverse-sorted';
+  return 'unordered';
+}
+
+export const INPUT_SHAPE_LABEL: Record<InputShape, string> = {
+  empty: 'Empty',
+  single: 'Single element',
+  'already-sorted': 'Already sorted',
+  'reverse-sorted': 'Reverse sorted',
+  'all-equal': 'All elements identical',
+  unordered: 'Unsorted',
+};
+
 export function arraysEqual(a: number[], b: number[]): boolean {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {

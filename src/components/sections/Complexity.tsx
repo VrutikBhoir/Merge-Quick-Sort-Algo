@@ -17,7 +17,7 @@ export function Complexity() {
     <Section
       id="complexity"
       title="Complexity Analysis"
-      subtitle="Theoretical comparison of Merge Sort and Quick Sort across key metrics."
+      subtitle="Theoretical bounds for Merge Sort and Quick Sort. These describe how work grows with input size — they are not measurements. Use the comparison section above for measured timings and operation counts."
     >
       <div className="overflow-x-auto rounded-lg border border-gray-200">
         <table className="w-full">
@@ -47,6 +47,10 @@ export function Complexity() {
           </tbody>
         </table>
       </div>
+      <p className="mt-3 text-xs text-gray-400">
+        Every value in this table is a theoretical bound, not a measurement of this
+        application. Nothing here is timed, counted or verified at runtime.
+      </p>
     </Section>
   );
 }

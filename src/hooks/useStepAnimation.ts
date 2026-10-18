@@ -20,6 +20,15 @@ export function useStepAnimation({ totalSteps, speed, onComplete }: UseStepAnima
     }
   };
 
+  // The step list changes whenever the dataset (or pivot strategy) changes, and it can
+  // get shorter. Without this, currentStep can point past the end of the new list: the
+  // current step becomes undefined, the progress bar overshoots and Play is a no-op.
+  // Pause and clamp into range whenever totalSteps changes.
+  useEffect(() => {
+    setIsPlaying(false);
+    setCurrentStep((s) => (totalSteps > 0 ? Math.min(s, totalSteps - 1) : 0));
+  }, [totalSteps]);
+
   useEffect(() => {
     if (!isPlaying) {
       clearTimer();

@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Section } from '@/components/shared/Section';
 import { ArrayVisualization } from '@/components/shared/ArrayVisualization';
 import { generateDataset, parseManualInput } from '@/utils/dataset';
+import { MAX_ANIMATED_SIZE } from '@/constants';
 import type { DatasetType } from '@/types';
 
 const PRESET_SIZES = [10, 20, 50, 100, 500, 1000];
-const VIZ_CAP = 50;
+const VIZ_CAP = MAX_ANIMATED_SIZE;
 
 interface DatasetInputProps {
   dataset: number[];
@@ -105,6 +106,10 @@ export function DatasetInput({ dataset, onDatasetChange, onDatasetTypeChange }: 
             </div>
             <span className="text-sm text-gray-500">Current: {size.toLocaleString()}</span>
           </div>
+          <p className="mt-2 text-xs text-gray-400">
+            Datasets of any size can be benchmarked. Step-by-step animation is limited to{' '}
+            {MAX_ANIMATED_SIZE} elements so the browser stays responsive.
+          </p>
         </div>
 
         <div>

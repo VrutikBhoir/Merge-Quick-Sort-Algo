@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Section } from '@/components/shared/Section';
 import { benchmarkMergeSort } from '@/algorithms/mergeSort';
 import { benchmarkQuickSort } from '@/algorithms/quickSort';
-import type { PivotStrategy } from '@/types';
 
 interface Row {
   size: number;

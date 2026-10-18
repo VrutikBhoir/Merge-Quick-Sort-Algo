@@ -1,5 +1,6 @@
 import type { QuickStep, SortStats, SortResult, PivotStrategy } from '@/types';
 import { isSorted } from '@/utils/dataset';
+import { MAX_ANIMATED_SIZE } from '@/constants';
 
 function cloneStats(s: SortStats): SortStats {
   return { ...s };
@@ -17,7 +18,7 @@ function emptyStats(): SortStats {
   };
 }
 
-function pickPivot(arr: number[], low: number, high: number, strategy: PivotStrategy): number {
+function pickPivot(low: number, high: number, strategy: PivotStrategy): number {
   switch (strategy) {
     case 'first':
       return low;
@@ -32,10 +33,28 @@ function pickPivot(arr: number[], low: number, high: number, strategy: PivotStra
   }
 }
 
+/** Result of a 3-way partition. */
+interface PartitionRange {
+  /** First index of the contiguous run equal to the pivot. */
+  lt: number;
+  /** Last index of the contiguous run equal to the pivot. */
+  equalEnd: number;
+}
+
+/**
+ * Builds the animation timeline.
+ *
+ * Every step stores a full copy of the array, so the recorded history grows as
+ * O(n^2 log n). Inputs larger than MAX_ANIMATED_SIZE are rejected outright and return
+ * an empty timeline; callers are expected to check the size first and offer the
+ * benchmark instead. Use `benchmarkQuickSort` to measure arrays of any size.
+ */
 export function quickSortSteps(
   input: number[],
   strategy: PivotStrategy = 'last'
 ): QuickStep[] {
+  if (input.length > MAX_ANIMATED_SIZE) return [];
+
   const arr = [...input];
   const steps: QuickStep[] = [];
   const sortedRanges: [number, number][] = [];
@@ -73,21 +92,37 @@ export function quickSortSteps(
       return;
     }
 
-    const pivotIndex = pickPivot(arr, low, high, strategy);
+    const pivotIndex = pickPivot(low, high, strategy);
     record('select-pivot', low, high, pivotIndex, `Selected pivot: ${arr[pivotIndex]} (index ${pivotIndex}) using "${strategy}" strategy.`, stats, {
       partitionRange: [low, high],
     });
 
-    const finalPivot = partition(low, high, pivotIndex, stats);
+    const { lt, equalEnd } = partition(low, high, pivotIndex, stats);
 
-    sortedRanges.push([finalPivot, finalPivot]);
-    record('done', low, high, finalPivot, `Pivot ${arr[finalPivot]} placed at index ${finalPivot}. Left side < pivot, right side > pivot.`, stats);
+    sortedRanges.push([lt, equalEnd]);
+    record('done', low, high, lt, `Pivot ${arr[lt]} fixed at indices ${lt}..${equalEnd}. Left side < pivot, right side > pivot.`, stats);
 
-    quickSort(low, finalPivot - 1, depth + 1, stats);
-    quickSort(finalPivot + 1, high, depth + 1, stats);
+    quickSort(low, lt - 1, depth + 1, stats);
+    quickSort(equalEnd + 1, high, depth + 1, stats);
   }
 
-  function partition(low: number, high: number, pivotIndex: number, stats: SortStats): number {
+  /**
+   * 3-way (Dutch National Flag) partition.
+   *
+   * After this call the pivot run occupies [lt..equalEnd] in its final sorted
+   * position, [low..lt-1] holds only values smaller than the pivot and
+   * [equalEnd+1..high] only values larger than it.
+   *
+   * Collecting equal values into their own block is what stops duplicate-heavy or
+   * all-equal input from degenerating into O(n^2): a Lomuto partition sends every
+   * equal element to the same side and ends up with n levels of recursion.
+   */
+  function partition(
+    low: number,
+    high: number,
+    pivotIndex: number,
+    stats: SortStats
+  ): PartitionRange {
     // Move pivot to end
     if (pivotIndex !== high) {
       stats.swaps++;
@@ -100,42 +135,66 @@ export function quickSortSteps(
     }
 
     const pivotValue = arr[high];
-    let i = low - 1;
+    let lt = low;
+    let gt = high - 1;
+    let i = low;
 
-    for (let j = low; j < high; j++) {
+    while (i <= gt) {
       stats.comparisons++;
-      stats.arrayAccesses += 2;
-      record('compare', low, high, high, `Comparing ${arr[j]} with pivot ${pivotValue}.`, stats, {
-        comparing: [j, high],
+      stats.arrayAccesses++;
+      record('compare', low, high, high, `Comparing ${arr[i]} with pivot ${pivotValue}.`, stats, {
+        comparing: [i, high],
         partitionRange: [low, high],
       });
 
-      if (arr[j] <= pivotValue) {
-        i++;
-        if (i !== j) {
+      if (arr[i] < pivotValue) {
+        if (i !== lt) {
           stats.swaps++;
           stats.arrayAccesses += 2;
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-          record('swap', low, high, high, `Swapped ${arr[i]} and ${arr[j]} (element ≤ pivot moved left).`, stats, {
-            swapping: [i, j],
+          [arr[lt], arr[i]] = [arr[i], arr[lt]];
+          record('swap', low, high, high, `Swapped ${arr[lt]} and ${arr[i]} (element < pivot moved left).`, stats, {
+            swapping: [lt, i],
             partitionRange: [low, high],
           });
+        }
+        lt++;
+        i++;
+      } else {
+        // Second comparison: only reached when the first one failed.
+        stats.comparisons++;
+        stats.arrayAccesses++;
+        if (arr[i] > pivotValue) {
+          if (i !== gt) {
+            stats.swaps++;
+            stats.arrayAccesses += 2;
+            [arr[i], arr[gt]] = [arr[gt], arr[i]];
+            record('swap', low, high, high, `Swapped ${arr[i]} and ${arr[gt]} (element > pivot moved right).`, stats, {
+              swapping: [i, gt],
+              partitionRange: [low, high],
+            });
+          }
+          // arr[gt] is now > pivot; re-examine index i on the next iteration.
+          gt--;
+        } else {
+          i++;
         }
       }
     }
 
-    // Place pivot in correct position
-    if (i + 1 !== high) {
+    // arr[high] still holds the pivot value. Move it alongside the equal block so the
+    // whole run [lt..equalEnd] is the pivot's final sorted position.
+    const equalEnd = gt + 1;
+    if (equalEnd !== high) {
       stats.swaps++;
       stats.arrayAccesses += 2;
-      [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
-      record('swap', low, high, i + 1, `Placed pivot ${pivotValue} at its sorted position ${i + 1}.`, stats, {
-        swapping: [i + 1, high],
+      [arr[equalEnd], arr[high]] = [arr[high], arr[equalEnd]];
+      record('swap', low, high, equalEnd, `Placed pivot ${pivotValue} at its sorted position ${equalEnd}.`, stats, {
+        swapping: [equalEnd, high],
         partitionRange: [low, high],
       });
     }
 
-    return i + 1;
+    return { lt, equalEnd };
   }
 
   const stats = emptyStats();
@@ -148,6 +207,11 @@ export function quickSortSteps(
   return steps;
 }
 
+/**
+ * Headless benchmark — identical algorithm to `quickSortSteps` (same 3-way
+ * partition, same pivot strategies) but without any step recording, so nothing in the
+ * timed region is instrumentation overhead. Runs at any input size.
+ */
 export function benchmarkQuickSort(
   input: number[],
   strategy: PivotStrategy = 'last'
@@ -162,38 +226,58 @@ export function benchmarkQuickSort(
     if (low > high) return;
     if (low === high) return;
 
-    const pivotIndex = pickPivot(arr, low, high, strategy);
-    const finalPivot = partition(low, high, pivotIndex);
-    quickSort(low, finalPivot - 1, depth + 1);
-    quickSort(finalPivot + 1, high, depth + 1);
+    const pivotIndex = pickPivot(low, high, strategy);
+    const { lt, equalEnd } = partition(low, high, pivotIndex);
+    quickSort(low, lt - 1, depth + 1);
+    quickSort(equalEnd + 1, high, depth + 1);
   }
 
-  function partition(low: number, high: number, pivotIndex: number): number {
+  function partition(low: number, high: number, pivotIndex: number): PartitionRange {
     if (pivotIndex !== high) {
       stats.swaps++;
       stats.arrayAccesses += 2;
       [arr[pivotIndex], arr[high]] = [arr[high], arr[pivotIndex]];
     }
     const pivotValue = arr[high];
-    let i = low - 1;
-    for (let j = low; j < high; j++) {
+    let lt = low;
+    let gt = high - 1;
+    let i = low;
+
+    while (i <= gt) {
       stats.comparisons++;
-      stats.arrayAccesses += 2;
-      if (arr[j] <= pivotValue) {
-        i++;
-        if (i !== j) {
+      stats.arrayAccesses++;
+      if (arr[i] < pivotValue) {
+        if (i !== lt) {
           stats.swaps++;
           stats.arrayAccesses += 2;
-          [arr[i], arr[j]] = [arr[j], arr[i]];
+          [arr[lt], arr[i]] = [arr[i], arr[lt]];
+        }
+        lt++;
+        i++;
+      } else {
+        stats.comparisons++;
+        stats.arrayAccesses++;
+        if (arr[i] > pivotValue) {
+          if (i !== gt) {
+            stats.swaps++;
+            stats.arrayAccesses += 2;
+            [arr[i], arr[gt]] = [arr[gt], arr[i]];
+          }
+          gt--;
+        } else {
+          i++;
         }
       }
     }
-    if (i + 1 !== high) {
+
+    const equalEnd = gt + 1;
+    if (equalEnd !== high) {
       stats.swaps++;
       stats.arrayAccesses += 2;
-      [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+      [arr[equalEnd], arr[high]] = [arr[high], arr[equalEnd]];
     }
-    return i + 1;
+
+    return { lt, equalEnd };
   }
 
   if (arr.length > 0) quickSort(0, arr.length - 1, 0);

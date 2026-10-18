@@ -20,7 +20,9 @@ const NAV_ITEMS = [
 
 function App() {
   const [dataset, setDataset] = useState<number[]>(() => generateDataset('random', 20));
-  const [datasetType, setDatasetType] = useState<DatasetType>('random');
+  // The selected type is only ever written, never read, so only the setter is kept.
+  // DatasetInput still receives onDatasetTypeChange and fires it exactly as before.
+  const [, setDatasetType] = useState<DatasetType>('random');
   const [pivotStrategy, setPivotStrategy] = useState<PivotStrategy>('last');
 
   const handleDatasetChange = (data: number[]) => setDataset(data);

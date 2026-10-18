@@ -1,5 +1,6 @@
 import type { MergeStep, SortStats, SortResult } from '@/types';
 import { isSorted } from '@/utils/dataset';
+import { MAX_ANIMATED_SIZE } from '@/constants';
 
 function cloneStats(s: SortStats): SortStats {
   return { ...s };
@@ -17,7 +18,17 @@ function emptyStats(): SortStats {
   };
 }
 
+/**
+ * Builds the animation timeline.
+ *
+ * Every step stores a full copy of the array, so the recorded history grows as
+ * O(n^2 log n). Inputs larger than MAX_ANIMATED_SIZE are rejected outright and return
+ * an empty timeline; callers are expected to check the size first and offer the
+ * benchmark instead. Use `benchmarkMergeSort` to measure arrays of any size.
+ */
 export function mergeSortSteps(input: number[]): MergeStep[] {
+  if (input.length > MAX_ANIMATED_SIZE) return [];
+
   const arr = [...input];
   const steps: MergeStep[] = [];
   const sortedRanges: [number, number][] = [];
@@ -110,16 +121,12 @@ export function mergeSortSteps(input: number[]): MergeStep[] {
 
     stats.merges++;
 
-    const existingIdx = sortedRanges.findIndex(
-      (r) => r[0] === left && r[1] === right
-    );
-    void existingIdx;
-    // merge sorted ranges
+    // Collapse the two child ranges into the range they were just merged into.
+    // Each index is re-looked-up after the previous splice so the indices stay valid.
     const leftIdx = sortedRanges.findIndex((r) => r[0] === left && r[1] === mid);
-    const rightIdx = sortedRanges.findIndex((r) => r[0] === mid + 1 && r[1] === right);
     if (leftIdx !== -1) sortedRanges.splice(leftIdx, 1);
-    const adj = rightIdx !== -1 ? sortedRanges.findIndex((r) => r[0] === mid + 1 && r[1] === right) : -1;
-    if (adj !== -1) sortedRanges.splice(adj, 1);
+    const rightIdx = sortedRanges.findIndex((r) => r[0] === mid + 1 && r[1] === right);
+    if (rightIdx !== -1) sortedRanges.splice(rightIdx, 1);
     sortedRanges.push([left, right]);
 
     record('merge', left, mid, right, `Merged [${left}..${right}] is now sorted.`, stats);
@@ -135,6 +142,11 @@ export function mergeSortSteps(input: number[]): MergeStep[] {
   return steps;
 }
 
+/**
+ * Headless benchmark — identical algorithm to `mergeSortSteps` but without any step
+ * recording, so nothing in the timed region is instrumentation overhead.
+ * Runs at any input size.
+ */
 export function benchmarkMergeSort(input: number[]): SortResult {
   const arr = [...input];
   const stats = emptyStats();
