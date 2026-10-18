@@ -1,13 +1,6 @@
 export type PivotStrategy = 'first' | 'last' | 'middle' | 'random';
 
-export type DatasetType =
-  | 'random'
-  | 'sorted'
-  | 'reverse'
-  | 'nearly'
-  | 'duplicates';
-
-export type Theme = 'light' | 'dark';
+export type DatasetType = 'random' | 'sorted' | 'reverse' | 'duplicates';
 
 export interface SortStats {
   comparisons: number;
@@ -17,6 +10,12 @@ export interface SortStats {
   maxRecursionDepth: number;
   merges: number;
   executionTime: number;
+}
+
+export interface SortResult {
+  stats: SortStats;
+  output: number[];
+  sorted: boolean;
 }
 
 export interface MergeStep {
@@ -44,33 +43,4 @@ export interface QuickStep {
   partitionRange?: [number, number];
   description: string;
   stats: SortStats;
-}
-
-export interface BenchmarkResult {
-  algorithm: 'merge' | 'quick';
-  datasetType: DatasetType;
-  size: number;
-  stats: SortStats;
-  sorted: boolean;
-}
-
-export interface BenchmarkRow {
-  size: number;
-  mergeTime: number;
-  quickTime: number;
-  mergeComparisons: number;
-  quickComparisons: number;
-  mergeSwaps: number;
-  quickSwaps: number;
-  mergeDepth: number;
-  quickDepth: number;
-}
-
-export interface Problem {
-  id: number;
-  question: string;
-  options: string[];
-  correctIndex: number;
-  explanation: string;
-  complexity: string;
 }

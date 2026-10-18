@@ -1,4 +1,5 @@
-import type { QuickStep, SortStats, PivotStrategy } from '@/types';
+import type { QuickStep, SortStats, SortResult, PivotStrategy } from '@/types';
+import { isSorted } from '@/utils/dataset';
 
 function cloneStats(s: SortStats): SortStats {
   return { ...s };
@@ -150,7 +151,7 @@ export function quickSortSteps(
 export function benchmarkQuickSort(
   input: number[],
   strategy: PivotStrategy = 'last'
-): SortStats {
+): SortResult {
   const arr = [...input];
   const stats = emptyStats();
   const start = performance.now();
@@ -197,5 +198,5 @@ export function benchmarkQuickSort(
 
   if (arr.length > 0) quickSort(0, arr.length - 1, 0);
   stats.executionTime = performance.now() - start;
-  return stats;
+  return { stats, output: arr, sorted: isSorted(arr) };
 }

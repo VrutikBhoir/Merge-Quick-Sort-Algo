@@ -1,5 +1,4 @@
 import { Play, Pause, SkipForward, SkipBack, RotateCcw, Gauge } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
 
 interface AlgorithmControlsProps {
   isPlaying: boolean;
@@ -26,13 +25,8 @@ export function AlgorithmControls({
   currentStep,
   totalSteps,
 }: AlgorithmControlsProps) {
-  const { theme } = useTheme();
-
-  const btnBase = `rounded-lg p-2.5 transition-all hover:scale-105 disabled:opacity-40 disabled:hover:scale-100 ${
-    theme === 'dark'
-      ? 'bg-gray-800 hover:bg-gray-700 text-gray-200'
-      : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-  }`;
+  const btnBase =
+    'rounded-lg p-2.5 transition-all disabled:opacity-40 bg-gray-100 hover:bg-gray-200 text-gray-700';
 
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -44,11 +38,19 @@ export function AlgorithmControls({
           <SkipBack className="w-4 h-4" />
         </button>
         {isPlaying ? (
-          <button onClick={onPause} className={`rounded-lg p-2.5 transition-all hover:scale-105 ${theme === 'dark' ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' : 'bg-amber-100 text-amber-600 hover:bg-amber-200'}`} title="Pause">
+          <button
+            onClick={onPause}
+            className="rounded-lg p-2.5 transition-all bg-amber-100 text-amber-600 hover:bg-amber-200"
+            title="Pause"
+          >
             <Pause className="w-4 h-4" />
           </button>
         ) : (
-          <button onClick={onPlay} className={`rounded-lg p-2.5 transition-all hover:scale-105 ${theme === 'dark' ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30' : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'}`} title="Play">
+          <button
+            onClick={onPlay}
+            className="rounded-lg p-2.5 transition-all bg-emerald-100 text-emerald-600 hover:bg-emerald-200"
+            title="Play"
+          >
             <Play className="w-4 h-4" />
           </button>
         )}
@@ -58,7 +60,7 @@ export function AlgorithmControls({
       </div>
 
       <div className="flex items-center gap-2">
-        <Gauge className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+        <Gauge className="w-4 h-4 text-gray-500" />
         <input
           type="range"
           min={0.5}
@@ -68,12 +70,10 @@ export function AlgorithmControls({
           onChange={(e) => onSpeedChange(Number(e.target.value))}
           className="w-24 accent-blue-500"
         />
-        <span className={`text-xs font-mono w-12 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-          {speed}x
-        </span>
+        <span className="text-xs font-mono w-12 text-gray-500">{speed}x</span>
       </div>
 
-      <div className={`text-xs font-mono ml-auto ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+      <div className="text-xs font-mono ml-auto text-gray-500">
         Step {currentStep + 1} / {totalSteps}
       </div>
     </div>

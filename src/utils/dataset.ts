@@ -36,21 +36,6 @@ export function generateDataset(
       }
       return arr;
     }
-    case 'nearly': {
-      const arr: number[] = [];
-      let val = 1;
-      for (let i = 0; i < n; i++) {
-        arr.push(val);
-        val += (rand() % 3) + 1;
-      }
-      const swaps = Math.max(1, Math.floor(n * 0.05));
-      for (let s = 0; s < swaps; s++) {
-        const i = rand() % n;
-        const j = rand() % n;
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
     case 'duplicates': {
       const pool = n > 20 ? 5 : 3;
       const arr: number[] = [];
@@ -82,6 +67,14 @@ export function countDuplicates(arr: number[]): number {
 export function isSorted(arr: number[]): boolean {
   for (let i = 1; i < arr.length; i++) {
     if (arr[i] < arr[i - 1]) return false;
+  }
+  return true;
+}
+
+export function arraysEqual(a: number[], b: number[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
   }
   return true;
 }

@@ -1,46 +1,25 @@
-import type { ReactNode } from 'react';
-import { useTheme } from '@/context/ThemeContext';
-
 interface StatCardProps {
   label: string;
-  value: ReactNode;
-  icon?: ReactNode;
-  accent?: 'blue' | 'green' | 'amber' | 'red' | 'purple' | 'teal';
+  value: string | number;
+  accent?: 'blue' | 'green' | 'amber' | 'red' | 'teal';
   sublabel?: string;
 }
 
-const accentClasses: Record<string, { bg: string; text: string; border: string }> = {
-  blue: { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/20' },
-  green: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', border: 'border-emerald-500/20' },
-  amber: { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500/20' },
-  red: { bg: 'bg-red-500/10', text: 'text-red-500', border: 'border-red-500/20' },
-  purple: { bg: 'bg-violet-500/10', text: 'text-violet-500', border: 'border-violet-500/20' },
-  teal: { bg: 'bg-teal-500/10', text: 'text-teal-500', border: 'border-teal-500/20' },
+const accentClasses: Record<string, { text: string; border: string }> = {
+  blue: { text: 'text-blue-600', border: 'border-blue-200' },
+  green: { text: 'text-emerald-600', border: 'border-emerald-200' },
+  amber: { text: 'text-amber-600', border: 'border-amber-200' },
+  red: { text: 'text-red-600', border: 'border-red-200' },
+  teal: { text: 'text-teal-600', border: 'border-teal-200' },
 };
 
-export function StatCard({ label, value, icon, accent = 'blue', sublabel }: StatCardProps) {
-  const { theme } = useTheme();
+export function StatCard({ label, value, accent = 'blue', sublabel }: StatCardProps) {
   const a = accentClasses[accent];
   return (
-    <div
-      className={`rounded-xl border p-4 transition-all hover:scale-[1.02] hover:shadow-md ${
-        theme === 'dark'
-          ? 'bg-gray-900/60 border-gray-800'
-          : 'bg-white border-gray-200'
-      } ${a.border}`}
-    >
-      <div className="flex items-center justify-between mb-2">
-        <span className={`text-xs font-medium uppercase tracking-wide ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-          {label}
-        </span>
-        {icon && <span className={`${a.text} ${a.bg} rounded-lg p-1.5`}>{icon}</span>}
-      </div>
-      <div className={`text-xl md:text-2xl font-bold ${a.text}`}>{value}</div>
-      {sublabel && (
-        <div className={`mt-1 text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-          {sublabel}
-        </div>
-      )}
+    <div className={`rounded-lg border ${a.border} bg-white p-3`}>
+      <div className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</div>
+      <div className={`text-lg font-bold ${a.text} mt-1`}>{value}</div>
+      {sublabel && <div className="mt-0.5 text-xs text-gray-400">{sublabel}</div>}
     </div>
   );
 }

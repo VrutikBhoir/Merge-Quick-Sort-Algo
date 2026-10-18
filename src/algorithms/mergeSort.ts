@@ -1,4 +1,5 @@
-import type { MergeStep, SortStats } from '@/types';
+import type { MergeStep, SortStats, SortResult } from '@/types';
+import { isSorted } from '@/utils/dataset';
 
 function cloneStats(s: SortStats): SortStats {
   return { ...s };
@@ -134,7 +135,7 @@ export function mergeSortSteps(input: number[]): MergeStep[] {
   return steps;
 }
 
-export function benchmarkMergeSort(input: number[]): SortStats {
+export function benchmarkMergeSort(input: number[]): SortResult {
   const arr = [...input];
   const stats = emptyStats();
   const start = performance.now();
@@ -183,5 +184,5 @@ export function benchmarkMergeSort(input: number[]): SortStats {
 
   if (arr.length > 0) mergeSort(0, arr.length - 1, 0);
   stats.executionTime = performance.now() - start;
-  return stats;
+  return { stats, output: arr, sorted: isSorted(arr) };
 }
