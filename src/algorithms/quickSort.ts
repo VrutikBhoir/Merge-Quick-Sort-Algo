@@ -220,16 +220,35 @@ export function benchmarkQuickSort(
   const stats = emptyStats();
   const start = performance.now();
 
-  function quickSort(low: number, high: number, depth: number): void {
-    stats.recursionDepth = depth;
-    stats.maxRecursionDepth = Math.max(stats.maxRecursionDepth, depth);
-    if (low > high) return;
-    if (low === high) return;
+  function quickSort(lo: number, hi: number, depth: number): void {
+    // `low`/`high` are the loop variables, so the larger partition is handled by
+    // iterating rather than by recursing.
+    let low = lo;
+    let high = hi;
 
-    const pivotIndex = pickPivot(low, high, strategy);
-    const { lt, equalEnd } = partition(low, high, pivotIndex);
-    quickSort(low, lt - 1, depth + 1);
-    quickSort(equalEnd + 1, high, depth + 1);
+    for (;;) {
+      stats.recursionDepth = depth;
+      stats.maxRecursionDepth = Math.max(stats.maxRecursionDepth, depth);
+      if (low >= high) return;
+
+      const pivotIndex = pickPivot(low, high, strategy);
+      const { lt, equalEnd } = partition(low, high, pivotIndex);
+
+      // Recurse into the smaller side and iterate over the larger one. Either order
+      // sorts correctly and performs identical work, but iterating on the larger side
+      // caps the stack at O(log n) instead of O(n). This matters for adversarial pivot
+      // choices: on sorted input the "last" strategy partitions n-1/0 every time, which
+      // without this recurses ~n deep and can overflow the call stack on large inputs.
+      const leftSize = lt - low;
+      const rightSize = high - equalEnd;
+      if (leftSize < rightSize) {
+        quickSort(low, lt - 1, depth + 1);
+        low = equalEnd + 1;
+      } else {
+        quickSort(equalEnd + 1, high, depth + 1);
+        high = lt - 1;
+      }
+    }
   }
 
   function partition(low: number, high: number, pivotIndex: number): PartitionRange {

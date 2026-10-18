@@ -6,7 +6,6 @@ import { DatasetInput } from '@/components/sections/DatasetInput';
 import { MergeSortPanel } from '@/components/sections/MergeSortPanel';
 import { QuickSortPanel } from '@/components/sections/QuickSortPanel';
 import { Comparison } from '@/components/sections/Comparison';
-import { WorstCase } from '@/components/sections/WorstCase';
 import { Complexity } from '@/components/sections/Complexity';
 
 const NAV_ITEMS = [
@@ -14,7 +13,6 @@ const NAV_ITEMS = [
   { id: 'merge-sort', label: 'Merge Sort' },
   { id: 'quick-sort', label: 'Quick Sort' },
   { id: 'comparison', label: 'Compare' },
-  { id: 'worst-case', label: 'Worst Case' },
   { id: 'complexity', label: 'Complexity' },
 ];
 
@@ -79,8 +77,6 @@ function App() {
         </div>
 
         <Comparison dataset={dataset} pivotStrategy={pivotStrategy} />
-
-        <WorstCase />
 
         <Complexity />
       </main>
