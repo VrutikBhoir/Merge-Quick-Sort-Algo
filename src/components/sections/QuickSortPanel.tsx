@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Section } from '@/components/shared/Section';
 import { ArrayVisualization } from '@/components/shared/ArrayVisualization';
 import { AlgorithmControls } from '@/components/shared/AlgorithmControls';
@@ -9,7 +9,7 @@ import { useStepAnimation } from '@/hooks/useStepAnimation';
 import { InputNotice } from '@/components/shared/InputNotice';
 import { MAX_ANIMATED_SIZE } from '@/constants';
 import { isSorted } from '@/utils/dataset';
-import type { PivotStrategy, QuickStep } from '@/types';
+import type { PivotStrategy } from '@/types';
 
 interface QuickSortPanelProps {
   dataset: number[];
@@ -26,7 +26,6 @@ const strategies: { value: PivotStrategy; label: string }[] = [
 
 export function QuickSortPanel({ dataset, pivotStrategy, onPivotStrategyChange }: QuickSortPanelProps) {
   const [speed, setSpeed] = useState(5);
-  const [steps, setSteps] = useState<QuickStep[]>([]);
   const [blockedNotice, setBlockedNotice] = useState(false);
 
   // Step recording stores a copy of the whole array per step, so it is only done for
@@ -38,15 +37,17 @@ export function QuickSortPanel({ dataset, pivotStrategy, onPivotStrategyChange }
   // benchmark is unaffected and still measures this input.
   const alreadySorted = dataset.length > 1 && isSorted(dataset);
 
-  useEffect(() => {
-    setSteps(canAnimate && !alreadySorted ? quickSortSteps(dataset, pivotStrategy) : []);
-  }, [dataset, pivotStrategy, canAnimate, alreadySorted]);
+  const steps = useMemo(
+    () => (canAnimate && !alreadySorted ? quickSortSteps(dataset, pivotStrategy) : []),
+    [dataset, pivotStrategy, canAnimate, alreadySorted]
+  );
 
   useEffect(() => {
     setBlockedNotice(false);
   }, [dataset, pivotStrategy]);
 
   const totalSteps = steps.length;
+  const animationKey = `${pivotStrategy}:${canAnimate ? dataset.join(',') : dataset.length}`;
   const {
     currentStep,
     isPlaying,
@@ -55,7 +56,7 @@ export function QuickSortPanel({ dataset, pivotStrategy, onPivotStrategyChange }
     next,
     prev,
     restart,
-  } = useStepAnimation({ totalSteps, speed });
+  } = useStepAnimation({ totalSteps, speed, resetKey: animationKey });
 
   const handlePlay = () => {
     if (alreadySorted) {

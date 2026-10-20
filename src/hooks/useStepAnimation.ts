@@ -4,9 +4,10 @@ interface UseStepAnimationOptions {
   totalSteps: number;
   speed: number; // steps per second multiplier
   onComplete?: () => void;
+  resetKey?: string;
 }
 
-export function useStepAnimation({ totalSteps, speed, onComplete }: UseStepAnimationOptions) {
+export function useStepAnimation({ totalSteps, speed, onComplete, resetKey }: UseStepAnimationOptions) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -23,11 +24,14 @@ export function useStepAnimation({ totalSteps, speed, onComplete }: UseStepAnima
   // The step list changes whenever the dataset (or pivot strategy) changes, and it can
   // get shorter. Without this, currentStep can point past the end of the new list: the
   // current step becomes undefined, the progress bar overshoots and Play is a no-op.
-  // Pause and clamp into range whenever totalSteps changes.
+  // Pause and reset when the animation input changes; otherwise clamp when only
+  // the timeline length changes.
   useEffect(() => {
     setIsPlaying(false);
-    setCurrentStep((s) => (totalSteps > 0 ? Math.min(s, totalSteps - 1) : 0));
-  }, [totalSteps]);
+    setCurrentStep((s) =>
+      resetKey !== undefined ? 0 : totalSteps > 0 ? Math.min(s, totalSteps - 1) : 0
+    );
+  }, [totalSteps, resetKey]);
 
   useEffect(() => {
     if (!isPlaying) {

@@ -198,7 +198,6 @@ export function quickSortSteps(
   }
 
   const stats = emptyStats();
-  record('select-pivot', 0, Math.max(0, arr.length - 1), 0, `Starting Quick Sort on ${arr.length} elements with "${strategy}" pivot strategy.`, stats);
   if (arr.length > 0) {
     quickSort(0, arr.length - 1, 0, stats);
   }

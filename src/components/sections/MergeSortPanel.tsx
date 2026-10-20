@@ -140,7 +140,6 @@ export function MergeSortPanel({ dataset }: MergeSortPanelProps) {
             <StatCard label="Array Accesses" value={stats.arrayAccesses.toLocaleString()} accent="teal" />
             <StatCard label="Merges" value={stats.merges.toLocaleString()} accent="green" />
             <StatCard label="Max Depth" value={stats.maxRecursionDepth} accent="amber" />
-            <StatCard label="Aux. Space (est.)" value={`O(n)`} accent="red" sublabel={`theory, not measured`} />
           </div>
         )}
       </div>

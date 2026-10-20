@@ -260,21 +260,6 @@ export function Comparison({ dataset, pivotStrategy }: ComparisonProps) {
               engine, its JIT state and whatever else is competing for the CPU. Changing the
               dataset, the pivot strategy or the machine can reverse it.
             </p>
-            <p className="font-medium text-gray-800 pt-1">Theoretical bounds (separate from the measurement above)</p>
-            <p>
-              Complexity bounds describe how work grows with input size; they do not say which
-              implementation is faster at a particular size. Merge Sort is O(n log n) in the best,
-              average and worst case and is stable, but needs O(n) auxiliary memory. Quick Sort is
-              O(n log n) on average with O(log n) auxiliary memory, but degrades to O(n²) with
-              adversarial pivot choices and is not stable. Auxiliary space in the table above is
-              quoted as a bound, not as measured memory.
-            </p>
-            <p>
-              Neither algorithm is universally better. Merge Sort suits workloads that need stable
-              ordering or predictable worst-case bounds; Quick Sort suits workloads where low
-              auxiliary memory matters. The right choice follows from the requirements, not from a
-              single timing.
-            </p>
           </div>
         )}
       </div>
